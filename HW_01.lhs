@@ -265,20 +265,20 @@ Define a function `incAll'` that increments a list of numbers by
 one.
 
 > incAll' :: [Int] -> [Int]
-> incAll' l = undefined
+> incAll' l = map (+1) l
 
 Define a function `incBy'` that takes a number and then increments
 a list of numbers *by that number*.
 
 > incBy' :: Int -> [Int] -> [Int]
-> incBy' n l = undefined
+> incBy' n l = map (+n) l
 
 Define a function `rev'` that reverses a list. Don't use
 anything but a folding function (your choice), the list
 constructors, and lambdas/higher-order functions.
 
 > rev' :: [Int] -> [Int]
-> rev' l = undefined
+> rev' l = foldl (:) [] [[l]]
 
 Define two versions of the function `append'` that appends two
 lists.  One, `appendr`, should use `foldr`; the other,
