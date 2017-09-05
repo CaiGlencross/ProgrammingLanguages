@@ -253,13 +253,13 @@ new versions with a prime, `'`.
 Define a function `sumUp'` that sums up a list of numbers.
 
 > sumUp' :: [Int] -> Int
-> sumUp' l = undefined
+> sumUp' l = foldr (+) 0 l
 
 Define a function `evens'` that selects out the even numbers from a
 list.
 
 > evens' :: [Int] -> [Int]
-> evens' l = undefined
+> evens' l = filter (even) l
 
 Define a function `incAll'` that increments a list of numbers by
 one.
