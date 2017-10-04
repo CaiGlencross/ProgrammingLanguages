@@ -56,11 +56,13 @@ Write a function that takes two numbers, `low` and `high`, and returns
 a random number `n` such that `low <= n <= high`, i.e., inclusively
 within the range.
 
+getStdRandom 
+
 > rand :: Int -> Int -> IO Int
-> rand low high = undefined
+> rand low high = getStdRandom (randomR (low,high))
 
 Now write a function that takes a list and shuffles it. The
-straightforward algorithm is O(n<sup>2</sup>):
+straightforward algorithm is O(n^2):
 
   - Given a non-empty list `xs`,
   - randomly split the list into an element `y` and the rest of the list `ys`,
@@ -68,8 +70,21 @@ straightforward algorithm is O(n<sup>2</sup>):
 
 Don't worry, we'll speed it up in a minute.
 
+IO Int
+(Int -> IO [Int])
+a -> [b] -> b = (\num lst -> lst !! num)
+
+<$> :: (a->b) -> a -> b
+<*> :: f (a->b) -> f a -> f b
+(>>=) :: f a -> (a -> f b) -> f b
+
+
 > shuffleList :: [a] -> IO [a]
-> shuffleList xs = undefined
+> shuffleList [] = pure []
+> shuffleList xs = rand 0 ((length xs)-1) >>= (\num -> let (pre, (y:ys)) = splitAt num xs 
+>                                                        in  (:) <$> (pure y) <*> (shuffleList (pre ++ ys)))
+>                       
+>                  
 
 
 Don't forget that you can run `:set +s` to get timing information in
@@ -82,7 +97,7 @@ shuffle](https://en.wikipedia.org/wiki/Fisher%E2%80%93Yates_shuffle). It
 works on arrays, not linked lists, so we'll have to use Haskell's
 arrays.
 
-Haskell's arrays are a little funny: arrays are parameterized by two
+Haskell's arrays are a little funky: arrays are parameterized by two
 things: the type of their index and the monad in which they'll be
 used. We'll work with
 [`IOArray`s](http://hackage.haskell.org/package/array-0.5.1.0/docs/Data-Array-IO.html). The
@@ -105,7 +120,7 @@ are *inclusive*, per
 [`Data.Ix`](http://hackage.haskell.org/package/base-4.8.1.0/docs/Data-Ix.html).
 
 > listToArray :: [a] -> IO (IOArray Int a)
-> listToArray x = undefined
+> listToArray x = newListArray (0, (length x) -1) x
 
 Okay: let's do it. Implement the Fisher--Yates shuffling algorithm that takes a given
 array and shuffles it.
