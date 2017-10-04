@@ -125,8 +125,23 @@ are *inclusive*, per
 Okay: let's do it. Implement the Fisher--Yates shuffling algorithm that takes a given
 array and shuffles it.
 
+readArray :: IOArray Int a -> Int -> IOArray a
+
+writeArray arr ((length arr) - 1) (readArray arr randomIndex)
+
+
+> swap :: IOArray Int a -> Int -> Int -> IO ()
+> swap arr ind1 ind2     = 
+>         let temp = readArray arr ind1
+>         in  readArray arr ind2 >>= \val -> 
+>             writeArray arr ind1 val >>= \_ -> 
+>             writeArray arr ind2 temp
+
+
 > shuffle :: IOArray Int a -> IO ()
 > shuffle arr = undefined
+
+
 
 
 Now use your array-based function `shuffle` to work on lists. Be sure
