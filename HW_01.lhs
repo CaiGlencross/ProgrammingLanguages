@@ -1,6 +1,8 @@
 Homework 1.0: Haskell warmup
 Due 2017-09-10
 
+Author: Cai Glencross
+
 > {-# OPTIONS_GHC -Wall -fno-warn-unused-imports #-}
 
 Let's learn some Haskell! We'll be going over some rudiments in class,
@@ -68,7 +70,7 @@ Now write a function called `incBy` that takes a number and
 increments a list of numbers *by that number*.
 
 > incBy :: Int -> [Int] -> [Int]
-> incBy x [] = []
+> incBy _ [] = []
 > incBy x (y:ys) = (x+y): incBy x ys
 
 Write a function `append` that takes two lists and appends them.  For
@@ -93,7 +95,7 @@ a leaf, i.e., both its children are `Empty`.
 
 > isLeaf :: IntTree -> Bool
 > isLeaf Empty = False
-> isLeaf (Node l x r) = if ((l == Empty)&&(r==Empty))
+> isLeaf (Node l _ r) = if ((l == Empty)&&(r==Empty))
 >                       then True
 >                       else False
 
@@ -125,9 +127,9 @@ want to write a helper function.
 
 > insert :: Int -> [Int] -> [Int]
 > insert x [] = [x]
-> insert a (x:xs) = if (a > x)
->                  then (x:(insert a xs))
->                  else (a:x:xs)
+> insert z (x:xs) = if (z > x)
+>                  then (x:(insert z xs))
+>                  else (z:x:xs)
 
 > insertHelper :: [Int] -> [Int] -> [Int]
 > insertHelper (xs) [] = (xs)
@@ -163,7 +165,7 @@ holds a value `x`. We'll look at this more deeply in the next
 assignment, when we talk about datatypes.
 
 > maybeBounded :: Maybe Int -> Maybe Int -> Int -> Bool
-> maybeBounded Nothing Nothing x = True
+> maybeBounded Nothing Nothing _ = True
 > maybeBounded Nothing (Just upper) x = x < upper
 > maybeBounded (Just lower) Nothing x = lower < x
 > maybeBounded (Just lower) (Just upper) x = lower < x && x < upper
@@ -219,10 +221,7 @@ You are, as always, free to introduce any helper functions you might need.
 > getMin (Node l x r) = (minimum (fringe (Node l x r)))
 
 > deleteBST :: Int -> IntTree -> IntTree
-> deleteBST num Empty = Empty
-> deleteBST num (Node Empty root Empty) = if num == root
->                                         then Empty
->                                         else (Node Empty root Empty)
+> deleteBST _ Empty = Empty
 > deleteBST num (Node l root Empty) = if num == root
 >                                     then l
 >                                     else if num < root
@@ -278,7 +277,7 @@ anything but a folding function (your choice), the list
 constructors, and lambdas/higher-order functions.
 
 > rev' :: [Int] -> [Int]
-> rev' l = foldl (:) [] [[l]]
+> rev' l = foldl (\xs x -> (x:xs)) [] l 
 
 Define two versions of the function `append'` that appends two
 lists.  One, `appendr`, should use `foldr`; the other,
@@ -286,10 +285,10 @@ lists.  One, `appendr`, should use `foldr`; the other,
 constructors, higher-order functions, and `rev'`.
 
 > appendr :: [Int] -> [Int] -> [Int]
-> appendr l1 l2 = undefined
+> appendr l1 l2 = foldr (:) l2 l1
 >
 > appendl :: [Int] -> [Int] -> [Int]
-> appendl l1 l2 = undefined
+> appendl l1 l2 = foldl (\xs x -> x:xs) l2 (rev' l1)
 
 **Problem 6: defining higher-order functions**
 
@@ -301,22 +300,27 @@ the Prelude or list comprehensions. Note that I've written the
 Define `map1` using natural recursion.
 
 > map1 :: (a -> b) -> [a] -> [b]
-> map1 = undefined
+> map1 _ [] = []
+> map1 f (x:xs) = (f x):(map1 f xs)
 
 Define `map2` using a folding function.
 
 > map2 :: (a -> b) -> [a] -> [b]
-> map2 f l = undefined
+> map2 f l = foldr (\x xs -> (f x):xs) [] l
 
 Define `filter1` using natural recursion.
 
 > filter1 :: (a -> Bool) -> [a] -> [a]
-> filter1 = undefined
+> filter1 _ [] = []
+> filter1 f (x:xs) = if (f x)
+>                    then x:(filter1 f xs)
+>                    else (filter1 f xs)
+
 
 Define `filter2` using a folding function.
 
 > filter2 :: (a -> Bool) -> [a] -> [a]
-> filter2 p l = undefined
+> filter2 p l = foldr (\x xs -> if (p x) then x:xs else xs) [] l
 
 **Problem 7: polymorphic datatypes **
 
@@ -341,8 +345,15 @@ Write a function `mapMaybe` that behaves like `map` when its
 higher-order function argument returns `Just x`, but filters out
 results where the function returns `Nothing`.
 
+
+> testMapMaybeF :: Int -> Maybe Bool
+> testMapMaybeF x = if x > 0 then Just True else Nothing
+
 > mapMaybe :: (a -> Maybe b) -> [a] -> [b]
-> mapMaybe = undefined
+> mapMaybe _ [] = []
+> mapMaybe f (x:xs) = case (f x) of
+>                        Nothing -> (mapMaybe f xs)
+>                        Just y -> y:(mapMaybe f xs)
 
 The pair datatype allows us to aggregate values: values of type
 `(a,b)` will have the form `(x,y)`, where `x` has type `a` and `y` has
@@ -352,7 +363,7 @@ Write a function `swap` that takes a pair of type `(a,b)` and returns
 a pair of type `(b,a)`.
 
 > swap :: (a,b) -> (b,a)
-> swap = undefined
+> swap (x,y) = (y,x)
 
 Write a function `pairUp` that takes two lists and returns a list of
 paired elements. If the lists have different lengths, return a list of
@@ -360,21 +371,24 @@ the shorter length. (This is called `zip` in the prelude. Don't define
 this function using `zip`!)
 
 > pairUp :: [a] -> [b] -> [(a,b)]
-> pairUp = undefined
+> pairUp [] _ = []
+> pairUp _ [] = []
+> pairUp (x:xs) (y:ys) = (x,y):(pairUp xs ys)
 
 Write a function `splitUp` that takes a list of pairs and returns a
 pair of lists. (This is called `unzip` in the prelude. Don't define
 this function using `unzip`!)
 
+
 > splitUp :: [(a,b)] -> ([a],[b])
-> splitUp = undefined
+> splitUp pairs =  foldr (\(x,y) (xs,ys) -> (x:xs, y:ys)) ([],[]) pairs
 
 Write a function `sumAndLength` that simultaneously sums a list and
 computes its length. You can define it using natural recursion or as a
 fold, but---traverse the list only once!
 
 > sumAndLength :: [Int] -> (Int,Int)
-> sumAndLength l = undefined
+> sumAndLength l = foldr (\x (sm, sz) -> (x+sm, sz+1)) (0,0) l
 
 **Problem 8: defining polymorphic datatypes**
 
@@ -435,29 +449,57 @@ type. We've given you the constructors' names. Make sure your `Cons`
 constructors takes arguments in the correct order, or we won't be able
 to give you credit for *any* of this problem.
 
+> eitherList :: EitherList Integer Bool
+> eitherList = ConsLeft 1 (ConsRight True (ConsRight False (ConsLeft 3 (ConsLeft 1 (ConsLeft 2 (ConsRight True Nil))))))
+
 > data EitherList a b =
 >     Nil
->   | ConsLeft {- fill in -}
->   | ConsRight {- fill in -}
+>   | ConsLeft a (EitherList a b)
+>   | ConsRight b (EitherList a b)
 >   deriving (Eq, Show)
 >
 > toEither :: [Either a b] -> EitherList a b
-> toEither = undefined
->
+> toEither [] = Nil
+> toEither (x:xs) = case x of
+>                     Left t -> ConsLeft t (toEither xs)
+>                     Right r -> ConsRight r (toEither xs)
+
+
+
 > fromEither :: EitherList a b -> [Either a b]
-> fromEither = undefined
+> fromEither l = case l of 
+>                   Nil -> []
+>                   ConsLeft t rest -> (Left t) : (fromEither rest)
+>                   ConsRight r rest -> (Right r) : (fromEither rest)
 >
+
+
+
 > mapLeft :: (a -> c) -> EitherList a b -> EitherList c b
-> mapLeft = undefined
->
+> mapLeft f elAB = case elAB of
+>                    Nil -> Nil
+>                    ConsLeft a rest -> ConsLeft (f a) (mapLeft f rest)
+>                    ConsRight b rest -> ConsRight b (mapLeft f rest)
+
 > mapRight :: (b -> c) -> EitherList a b -> EitherList a c
-> mapRight = undefined
->
+> mapRight f elAB = case elAB of
+>                    Nil -> Nil
+>                    ConsLeft a rest -> ConsLeft a (mapRight f rest)
+>                    ConsRight b rest -> ConsRight (f b) (mapRight f rest)
+
+
 > foldrEither :: (a -> c -> c) -> (b -> c -> c) -> c -> EitherList a b -> c
-> foldrEither = undefined
->
+> foldrEither f g acc elAB = case elAB of
+>                              Nil -> acc 
+>                              ConsLeft a rest -> f a (foldrEither f g acc rest)
+>                              ConsRight b rest -> g b (foldrEither f g acc rest)
+
+
 > foldlEither :: (c -> a -> c) -> (c -> b -> c) -> c -> EitherList a b -> c
-> foldlEither = undefined
+> foldlEither f g acc elAB = case elAB of
+>                              Nil -> acc 
+>                              ConsLeft a rest -> foldlEither f g (f acc a) rest 
+>                              ConsRight b rest -> foldlEither f g (g acc b) rest
 
 **Problem 9: maps and sets**
 
@@ -507,7 +549,7 @@ a -       - d
 ```
 
 > g1 = Map.fromList [(a, Set.fromList [b,c]),
->                    (b, Set.fromList [a,d]),
+>                    (b, Set.fromList [d]),
 >                    (c, Set.fromList [a,d]),
 >                    (d, Set.fromList [b,c])]
 
@@ -524,15 +566,57 @@ bidirectional. Feel free to use any function in `Data.Map`,
 `Data.Set`, or the Prelude, and write as many helper functions as you
 need.
 
+> setFolderFunction :: Graph -> Node -> Node -> Bool -> Bool 
+> setFolderFunction g rootNode containedNode boolAcc = boolAcc && (Set.member rootNode (g ! containedNode)) 
+
+> bidiHelper :: Graph -> Node -> Set Node -> Bool -> Bool	
+> bidiHelper g rootNode edgeSet boolAcc = boolAcc && (Set.foldr (setFolderFunction g rootNode) True edgeSet)
+
 > isBidi :: Graph -> Bool
-> isBidi = undefined
+> isBidi (theGraph) = Map.foldrWithKey (bidiHelper theGraph) True theGraph
 
 Write a function `bidify` that takes an arbitrary graph and makes it
 bidirectional by adding edges, i.e., if the node `a` points to `b` but
 not vice versa in a graph `g`, then `a` points to `b` *and* `b` points
-to `a` in the graph `bidify g`.
+to `a` in the graph `bidify g`.  
+
+\otherRoot otherEdgeSet setAccumulator -> if (Set.member root otherEdgeSet) then (Set.insert otherRoot setAccumulator) else setAccumulator
+
+> findEdgeHelper :: Node -> Node -> Set Node -> Set Node -> Set Node
+> findEdgeHelper root otherRoot otherEdgeSet setAccumulator = if (Set.member root otherEdgeSet) 
+>                                                             then (Set.insert otherRoot setAccumulator)
+>                                                             else setAccumulator
+
+> findEdges :: Graph -> Node -> Set Node
+> findEdges g root = Map.foldrWithKey (findEdgeHelper root) (g!root) g
+
+> bidifyHelper :: Graph -> Node -> Set Node -> Graph -> Graph	
+> bidifyHelper g rootNode edgeSet mapAcc = Map.insert rootNode (findEdges g rootNode) mapAcc
 
 > bidify :: Graph -> Graph
-> bidify = undefined
+> bidify (theGraph) = Map.foldrWithKey (bidifyHelper theGraph) (Map.fromList []) theGraph 
 
 Be sure to test your code!
+
+> isSorted :: Ord a => [a] -> Bool
+> isSorted [] = True
+> isSorted (x:xs) = fst (foldl (\(boolAcc, lst) x -> (boolAcc&&(x>lst), x)) (True, x) xs) 
+
+
+
+
+> getTails :: Eq a => [[a]]-> [[a]]
+> getTails l = foldr (\x acc -> if (x==[]) then acc else (tail x):acc) [] l
+
+> transpose [] = []
+> transpose l = let x = (foldr (\x acc -> if (x==[]) then acc else (head x):acc) [] l)
+>                in if x==[] then transpose (getTails l) else x:(transpose (getTails l))
+
+> sumLengthTuple [] = (0,0)
+> sumLengthTuple (x:xs) = let (sum, length) = sumLengthTuple xs in (sum+x, length+1)
+
+> mean l = let (sum, length) = sumLengthTuple l in sum/length
+
+
+
+
